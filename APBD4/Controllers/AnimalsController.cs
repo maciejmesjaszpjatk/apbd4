@@ -11,9 +11,20 @@ namespace APBD4.Controllers
     {
         // GET: api/animals
         [HttpGet]
-        public IActionResult GetAnimals()
+        public IActionResult GetAnimals([FromQuery] string name)
         {
-            return Ok(Animal.GetExtent());
+            var animals = Animal.GetExtent();
+            // if name parameter is not null or empty, filter animals by name
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                animals = animals.Where(a => a.Name.Contains(name, StringComparison.OrdinalIgnoreCase)).ToList();
+                
+                if (animals.Count == 0)
+                {
+                    return NotFound(new { error = $"No animals found with name containing '{name}'." });
+                }
+            }
+            return Ok(animals);
         }
         // POST: api/animals adding animal
         [HttpPost]
@@ -67,17 +78,17 @@ namespace APBD4.Controllers
             Animal.RemoveFromExtent(animal);
             return Ok("Animal deleted successfully!");
         }
-        // GET: api/animals/search?name={name} searching animal by name
-        [HttpGet("search")]
-        public IActionResult SearchAnimalByName([FromQuery] string name)
-        {
-            var animals = Animal.GetExtent().Where(a => a.Name.Contains(name, StringComparison.OrdinalIgnoreCase)).ToList();
-            
-            if (animals.Count == 0)
-            {
-                return NotFound(new { error = $"No animals found with name containing '{name}'." });
-            }
-            return Ok(animals);
-        }
+        // // GET: api/animals/search?name={name} searching animal by name
+        // [HttpGet("search")]
+        // public IActionResult SearchAnimalByName([FromQuery] string name)
+        // {
+        //     var animals = Animal.GetExtent().Where(a => a.Name.Contains(name, StringComparison.OrdinalIgnoreCase)).ToList();
+        //     
+        //     if (animals.Count == 0)
+        //     {
+        //         return NotFound(new { error = $"No animals found with name containing '{name}'." });
+        //     }
+        //     return Ok(animals);
+        // }
     }
 }
